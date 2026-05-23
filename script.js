@@ -49,6 +49,12 @@ async function fetchSpreadsheetData() {
 
 function fixDriveImageUrl(url) {
     if (!url) return '';
+
+    const pathMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (pathMatch && pathMatch[1]) {
+        const id = pathMatch[1];
+        return `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+    }
     const match = url.match(/id=([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
         const id = match[1];
