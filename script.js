@@ -2,6 +2,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyE2SaVGZiQQr34g3McCJlq
 
 let menuData = [];
 let momentData = [];
+let currentMomentLimit = 6; 
 
 async function fetchSpreadsheetData() {
     const cachedData = localStorage.getItem('jaws_data_cache');
@@ -58,15 +59,28 @@ function fixDriveImageUrl(url) {
 
 function renderMenu() {
     const container = document.getElementById('menuContainer');
-    if (!container) return;
+    if (!container) return; 
 
     if (menuData.length === 0) {
         container.innerHTML = '<div class="no-results">Ora ono menu nang kene 🤷‍♂️</div>';
         return;
     }
 
-    container.innerHTML = menuData.map(item => {
+    let dataToRender = menuData; 
+    const currentPath = window.location.pathname;
+    const isHome = currentPath.endsWith('/') || currentPath.endsWith('index.html') || currentPath === '';
+    
+    if (isHome) {
+        dataToRender = menuData.filter(item => 
+            item.favourite && item.favourite.toString().toLowerCase() === 'yes'
+        );
+        dataToRender = dataToRender.slice(0, 3);
+    }
+
+    container.innerHTML = dataToRender.map(item => {
         const safeImageUrl = fixDriveImageUrl(item.image_url);
+        
+        const buyButtonHTML = isHome ? '' : `<button class="buy-btn" onclick="orderNow('${escapeHtml(item.name)}')">Buy Now</button>`;
         
         return `
         <div class="menu-card">
@@ -74,13 +88,15 @@ function renderMenu() {
                 <img class="menu-img" 
                      src="${safeImageUrl}" 
                      alt="${escapeHtml(item.name)}"
+                     loading="lazy"
                      onerror="this.src='https://placehold.co/400x300/red/white?text=No+Image'">
             </div>
             <div class="menu-info">
                 <h3 class="menu-title">${escapeHtml(item.name)}</h3>
-                <p class="menu-desc">${escapeHtml(item.desc)}</p>
+                <p class="menu-desc">${escapeHtml(item.desc || item.description)}</p>
                 <div class="menu-bottom">
                     <span class="menu-price">${escapeHtml(item.price)}</span>
+                    ${buyButtonHTML}
                 </div>
             </div>
         </div>
@@ -90,14 +106,37 @@ function renderMenu() {
 
 function renderMoment() {
     const container = document.getElementById('momentContainer');
-    if (!container) return;
+    if (!container) return; 
 
     if (momentData.length === 0) {
         container.innerHTML = '<div class="no-results">Ora ono moment nang kene 📸</div>';
         return;
     }
 
-    container.innerHTML = momentData.map((item, index) => {
+    let dataToRender = momentData;
+    const currentPage = window.location.pathname.split("/").pop();
+    const loadMoreContainer = document.getElementById('loadMoreContainer');
+    
+    if (currentPage === "index.html" || currentPage === "") {
+        dataToRender = momentData.filter(item => 
+            item.favourite && item.favourite.toString().toLowerCase() === 'yes'
+        );
+        dataToRender = dataToRender.slice(0, 4);
+        
+        if (loadMoreContainer) loadMoreContainer.style.display = 'none';
+    } else {
+        dataToRender = momentData.slice(0, currentMomentLimit);
+        
+        if (loadMoreContainer) {
+            if (currentMomentLimit >= momentData.length) {
+                loadMoreContainer.style.display = 'none';
+            } else {
+                loadMoreContainer.style.display = 'block';
+            }
+        }
+    }
+
+    container.innerHTML = dataToRender.map((item, index) => {
         const safeImageUrl = fixDriveImageUrl(item.image_url);
         
         let sizeClass = '';
@@ -112,42 +151,40 @@ function renderMoment() {
                 <img class="moment-img" 
                      src="${safeImageUrl}" 
                      alt="Moment ${item.id}"
+                     loading="lazy"
                      onerror="this.src='https://placehold.co/400x300/FFD700/3E0B0E?text=Jaws+Moment'">
             </div>
         `;
     }).join('');
 }
 
+function loadMoreMoments() {
+    currentMomentLimit += 6;
+    renderMoment();
+}
+
 function orderNow(itemName) {
-    const waNumber = "628xxxxxxxxxx";
-    const message = `Halo Jaws Burger, saya mau order ${itemName}`;
-    const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
-    window.open(waLink, '_blank');
+    const formLink = `https://forms.gle/XZ49M2Accr1UN4qi8`;
+    window.open(formLink, '_blank');
 }
 
 function setActiveMenu() {
-    const sections = document.querySelectorAll('section, header');
+    let currentPage = window.location.pathname.split("/").pop();
+    
+    if (currentPage === "") {
+        currentPage = "index.html";
+    }
+
     const navLinks = document.querySelectorAll('.nav-link');
-
-    let current = '';
-    const scrollPosition = window.scrollY + 150;
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute('id');
-
-        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-            current = sectionId;
-        }
-    });
-
-    if (window.scrollY < 100) current = 'home';
-
+    
     navLinks.forEach(link => {
         link.classList.remove('active');
-        const href = link.getAttribute('href').substring(1);
-        if (href === current) link.classList.add('active');
+        
+        const href = link.getAttribute('href');
+        
+        if (href === currentPage) {
+            link.classList.add('active');
+        }
     });
 }
 
@@ -155,12 +192,15 @@ function setupSmoothScroll() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
+            const target = link.getAttribute('href');
+            
+            if (target.startsWith('#')) {
+                e.preventDefault(); 
+                const targetElement = document.querySelector(target);
 
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
         });
     });
@@ -181,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setupSmoothScroll();
     setActiveMenu();
-    window.addEventListener('scroll', setActiveMenu);
+    // window.addEventListener('scroll', setActiveMenu);
     window.addEventListener('resize', setActiveMenu);
 
     fetchSpreadsheetData();

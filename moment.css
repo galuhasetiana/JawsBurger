@@ -1,0 +1,62 @@
+.moment-grid-full {
+    column-count: 3;
+    column-gap: 15px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.moment-grid-full .moment-card {
+    break-inside: avoid;
+    margin-bottom: 15px;
+    display: inline-block;
+    width: 100%;
+}
+
+.moment-grid-full .moment-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.moment-grid-full .moment-card:hover .moment-img {
+    transform: scale(1.03);
+}
+
+@media screen and (max-width: 1024px) {
+    .moment-grid-full {
+        column-count: 3;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .moment-grid-full {
+        column-count: 2;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .moment-grid-full {
+        column-count: 1;
+    }
+}
+
+.load-more-btn {
+    background-color: transparent;
+    color: #F5EBD6;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.load-more-btn:hover {
+    color: #FF2A2A;
+    transform: scale(1.05);
+}
