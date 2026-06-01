@@ -1,0 +1,26 @@
+name: Deploy to GitHub Pages with Data Cache
+
+on:
+  push:
+    branches:
+      - main 
+  schedule:
+    - cron: '0 0 * * *' 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Fetch Spreadsheet Data & Save to JSON
+        run: |
+          # Mengambil data dari secret GitHub dan menyimpannya ke data.json
+          curl -L "${{ secrets.GOOGLE_API }}" -o data.json
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: . 
+          branch: gh-pages 

@@ -1,4 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyE2SaVGZiQQr34g3McCJlqZn87EvMJAA2RnJoBRnxaTfrJUxyx4wCLCphyb91-BSAQCw/exec";
+const API_APP_SCRIPT = "./data.json";
+const API_URL = API_APP_SCRIPT;
 
 let menuData = [];
 let momentData = [];
@@ -41,8 +42,8 @@ async function fetchSpreadsheetData() {
     } catch (error) {
         console.error("Error fetching data:", error);
         if (!cachedData) {
-            document.getElementById('menuContainer').innerHTML = '<div class="error-msg" style="color:red; text-align:center; padding: 20px;">Gagal memuat menu. Cek koneksi atau URL API kamu.</div>';
-            document.getElementById('momentContainer').innerHTML = '<div class="error-msg" style="color:red; text-align:center; padding: 20px;">Gagal memuat moment. Cek koneksi atau URL API kamu.</div>';
+            document.getElementById('menuContainer').innerHTML = '<div class="error-msg" style="color:red; text-align:center; padding: 20px;">Gagal memuat menu.</div>';
+            document.getElementById('momentContainer').innerHTML = '<div class="error-msg" style="color:red; text-align:center; padding: 20px;">Gagal memuat moment.</div>';
         }
     }
 }
