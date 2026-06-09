@@ -1,5 +1,4 @@
-const API_APP_SCRIPT = "./data.json";
-const API_URL = API_APP_SCRIPT;
+const API_URL = "/api/data";
 
 let menuData = [];
 let momentData = [];
